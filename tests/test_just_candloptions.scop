@@ -1,0 +1,38 @@
+<OpenScop>
+
+# =============================================== Global
+# Language
+C
+
+# Context
+CONTEXT
+0 2 0 0 0 0
+
+# Parameters are provided
+0
+
+# Number of statements
+0
+
+# =============================================== Extensions
+
+<candloptions>
+waw 1 # write after write (output)dependences matter
+raw 1 # read  after write (flow)dependences matter
+war 1 # write after read  (anti)dependences matter
+rar 1 # read  after read  (input)dependences matter
+commute 1 # use commutativity to simplify dependences
+fullcheck 0 # compute all dependence violations
+scalren 0 # enable scalar renaming
+scalpriv 0 # enable scalar privatization
+scalexp 0 # enable scalar expansion
+lastwriter 0 # compute last writer
+verbose 3 # enable verbose output
+outscop 0 # print the scop with dependences
+autocorrect 0 # correct violations.
+view 0 # call dot and gv to visualize the graphs
+struct 0 # print internal dependence structure
+prune-dups 1 # use experimental dependence pruning algorithm
+</candloptions>
+
+</OpenScop>

@@ -2,12 +2,12 @@
     /*+-----------------------------------------------------------------**
      **                       OpenScop Library                          **
      **-----------------------------------------------------------------**
-     **                            util.h                               **
+     **                     extensions/candloptions.h                   **
      **-----------------------------------------------------------------**
-     **                   First version: 08/10/2010                     **
+     **                   First version: 29/08/2014                     **
      **-----------------------------------------------------------------**
 
- 
+
  *****************************************************************************
  * OpenScop: Structures and formats for polyhedral tools to talk together    *
  *****************************************************************************
@@ -61,11 +61,11 @@
  *****************************************************************************/
 
 
-#ifndef OSL_UTIL_H
-# define OSL_UTIL_H
+#ifndef OSL_CANDLOPTIONS_H
+# define OSL_CANDLOPTIONS_H
 
 # include <stdio.h>
-
+# include <osl/interface.h>
 
 # if defined(__cplusplus)
 extern "C"
@@ -73,31 +73,81 @@ extern "C"
 # endif
 
 
+# define OSL_URI_CANDLOPTIONS "candloptions"
+
+
+
+struct osl_candloptions {
+  /* OPTIONS FOR DEPENDENCE COMPUTATION */
+  int waw;       /**< 1 if write after write (output) dependences matter. */
+  int waw_set;
+  int raw;       /**< 1 if read  after write (flow)   dependences matter. */
+  int raw_set;
+  int war;       /**< 1 if write after read  (anti)   dependences matter. */
+  int war_set;
+  int rar;       /**< 1 if read  after read  (input)  dependences matter. */
+  int rar_set;
+  int commute;   /**< 1 to use commutativity to simplify dependences. */
+  int commute_set;
+  int fullcheck; /**< 1 to compute all dependence violations. */
+  int fullcheck_set;
+  int scalar_renaming; /**< 1 to enable scalar renaming. */
+  int scalar_renaming_set;
+  int scalar_privatization; /**< 1 to enable scalar privatization. */
+  int scalar_privatization_set;
+  int scalar_expansion; /**< 1 to enable scalar privatization. */
+  int scalar_expansion_set;
+  int lastwriter; /**< 1 to compute last writer */
+  int lastwriter_set;
+  int verbose; /**< 1 to enable verbose output. */
+  int verbose_set;
+  int outscop; /**< 1 to print the scop with dependences. */
+  int outscop_set;
+  int autocorrect; /**< 1 to correct violations. fullcheck is set to 1 and 
+                     * the -test is required.
+                    */
+  int autocorrect_set;
+  /* UNDOCUMENTED OPTIONS FOR THE AUTHOR ONLY */
+  int view;      /**< 1 to call dot and gv to visualize the graphs. */
+  int view_set;
+  int structure; /**< 1 to print internal dependence structure. */
+  int structure_set;
+  int prune_dups; /**< 1 to use experimental dependence pruning algorithm. */
+  int prune_dups_set;
+};
+
+typedef struct osl_candloptions  osl_candloptions_t;
+typedef struct osl_candloptions* osl_candloptions_p;
 /*+***************************************************************************
- *                            Utility functions                              *
+ *                          Structure display function                       *
  *****************************************************************************/
-char * osl_util_skip_blank_and_comments(FILE *, char *);
-void   osl_util_sskip_blank_and_comments(char **);
-int    osl_util_read_int(FILE *, char **);
-char * osl_util_read_string(FILE *, char **);
-char * osl_util_read_line(FILE *, char **);
-char * osl_util_read_tag(FILE *, char **);
-char * osl_util_read_tail(FILE *);
-char * osl_util_read_uptoflag(FILE *, char **, char *);
-char * osl_util_read_uptotag(FILE *, char **, char *);
-char * osl_util_read_uptoendtag(FILE *, char **, char *);
-char * osl_util_tag_content(char *, char *);
-void   osl_util_safe_strcat(char **, char *, int *);
-char * osl_util_strdup(char const *);
-int    osl_util_get_precision();
-void   osl_util_print_provided(FILE *, int, char *);
-char * osl_util_identifier_substitution(char *, char **);
-int    osl_util_read_arg_int(int, char**, int*);
-int    osl_util_read_arg_string(int, char**, char**);
+void osl_candloptions_idump(FILE *, osl_candloptions_p, int);
+void osl_candloptions_dump(FILE *, osl_candloptions_p);
+char* osl_candloptions_sprint(osl_candloptions_p);
+
+
+/*****************************************************************************
+ *                               Reading function                            *
+ *****************************************************************************/
+osl_candloptions_p osl_candloptions_sread(char **);
+
+/*+***************************************************************************
+ *                    Memory allocation/deallocation function                *
+ *****************************************************************************/
+osl_candloptions_p osl_candloptions_malloc();
+void osl_candloptions_free(osl_candloptions_p);
+
+
+/*+***************************************************************************
+ *                            Processing functions                           *
+ *****************************************************************************/
+osl_candloptions_p osl_candloptions_clone(osl_candloptions_p);
+int osl_candloptions_equal(osl_candloptions_p, osl_candloptions_p);
+osl_interface_p   osl_candloptions_interface();
 
 
 # if defined(__cplusplus)
   }
 # endif
 
-#endif /* define OSL_UTIL_H */
+#endif /* define OSL_CANDLOPTIONS_H */
