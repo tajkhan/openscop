@@ -393,7 +393,10 @@ osl_strings_p osl_arrays_to_strings(osl_arrays_p arrays) {
  */
 int osl_arrays_add(osl_arrays_p arrays, int id, char* name) {
 
-  if (arrays == NULL || name == NULL)
+  if (arrays == NULL || name == NULL
+      || osl_arrays_get_index_from_id(arrays, id) != arrays->nb_names
+      || osl_arrays_get_index_from_name(arrays, name) != arrays->nb_names
+     )
     return -1;
 
   OSL_realloc(arrays->id, int *, (arrays->nb_names+1) * sizeof(int));
