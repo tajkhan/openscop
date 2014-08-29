@@ -69,6 +69,8 @@
 #include <osl/util.h>
 #include <osl/relation.h>
 #include <osl/interface.h>
+#include <osl/generic.h>
+#include <osl/extensions/null.h>
 #include <osl/extensions/symbols.h>
 
 
@@ -149,13 +151,13 @@ void osl_symbols_idump(FILE * file, osl_symbols_p symbols, int level) {
       fprintf(file, "|\t") ;
     fprintf(file, "\n") ;
 
-    // 3. Print the number of array dimensions for the symbol.
+    // 3. Print the number of identifictor tag for the symbol.
     for (i = 0; i <= level; i++)
       fprintf(file, "|\t");
-    if (symbols->nb_dims != OSL_UNDEFINED)
-      fprintf(file, "+-- Number of Dimensions: %d\n", symbols->nb_dims);
+    if (symbols->tag != OSL_UNDEFINED)
+      fprintf(file, "+-- Tag: %d\n", symbols->tag);
     else
-      fprintf(file, "+-- Undefined number of dimensions\n");
+      fprintf(file, "+-- Undefined tag\n");
 
     // A blank line.
     for(j = 0; j <= level + 1; j++)
@@ -215,6 +217,8 @@ char * osl_symbols_sprint(osl_symbols_p symbols) {
   int high_water_mark = OSL_MAX_STRING;
   char* string = NULL, *temp;
   char buffer[OSL_MAX_STRING];
+  osl_null_p null_ext = NULL;
+  osl_generic_p null_gen = NULL;
 
   OSL_malloc(string, char *, high_water_mark * sizeof(char));
   string[0] = '\0';
@@ -250,39 +254,80 @@ char * osl_symbols_sprint(osl_symbols_p symbols) {
     sprintf(buffer, "\n# %d.2 Generated Boolean\n%d\n", i, symbols->generated);
     osl_util_safe_strcat(&string, buffer, &high_water_mark);
 
-    // Printing Number of dimensions
-    sprintf(buffer,"\n# %d.3 Number of dimensions\n%d\n", i, symbols->nb_dims);
+    // Printing identificator tag
+    sprintf(buffer,"\n# %d.3 Tag\n%d\n", i, symbols->tag);
     osl_util_safe_strcat(&string, buffer, &high_water_mark);
 
     // Printing Identifier
     sprintf(buffer, "\n# %d.4 Identifier\n", i);
     osl_util_safe_strcat(&string, buffer, &high_water_mark);
-    temp = osl_generic_sprint(symbols->identifier);
+    if (symbols->identifier != NULL) {
+      temp = osl_generic_sprint(symbols->identifier);
+    }
+    else {
+      null_ext = osl_null_malloc();
+      null_gen = osl_generic_shell(null_ext, osl_null_interface());
+      temp = osl_generic_sprint(null_gen);
+      osl_generic_free(null_gen);
+      null_gen = NULL;
+      null_ext = NULL;
+    }
     osl_util_safe_strcat(&string, temp, &high_water_mark);
     free(temp);
 
     // Printing Datatype
     sprintf(buffer, "\n# %d.5 Datatype\n", i);
     osl_util_safe_strcat(&string, buffer, &high_water_mark);
-    temp = osl_generic_sprint(symbols->datatype);
+    if (symbols->datatype != NULL) {
+      temp = osl_generic_sprint(symbols->datatype);
+    }
+    else {
+      null_ext = osl_null_malloc();
+      null_gen = osl_generic_shell(null_ext, osl_null_interface());
+      temp = osl_generic_sprint(null_gen);
+      osl_generic_free(null_gen);
+      null_gen = NULL;
+      null_ext = NULL;
+    }
     osl_util_safe_strcat(&string, temp, &high_water_mark);
     free(temp);
 
     // Printing Scope
     sprintf(buffer, "\n# %d.6 Scope\n", i);
     osl_util_safe_strcat(&string, buffer, &high_water_mark);
-    temp = osl_generic_sprint(symbols->scope);
+    if (symbols->scope != NULL) {
+      temp = osl_generic_sprint(symbols->scope);
+    }
+    else {
+      null_ext = osl_null_malloc();
+      null_gen = osl_generic_shell(null_ext, osl_null_interface());
+      temp = osl_generic_sprint(null_gen);
+      osl_generic_free(null_gen);
+      null_gen = NULL;
+      null_ext = NULL;
+    }
     osl_util_safe_strcat(&string, temp, &high_water_mark);
     free(temp);
 
     // Printing Extent
     sprintf(buffer, "\n# %d.7 Extent\n", i);
     osl_util_safe_strcat(&string, buffer, &high_water_mark);
-    temp = osl_generic_sprint(symbols->extent);
+    if (symbols->extent != NULL) {
+      temp = osl_generic_sprint(symbols->extent);
+    }
+    else {
+      null_ext = osl_null_malloc();
+      null_gen = osl_generic_shell(null_ext, osl_null_interface());
+      temp = osl_generic_sprint(null_gen);
+      osl_generic_free(null_gen);
+      null_gen = NULL;
+      null_ext = NULL;
+    }
     osl_util_safe_strcat(&string, temp, &high_water_mark);
     free(temp);
 
     symbols = symbols->next;
+    i++;
   }
 
   OSL_realloc(string, char *, (strlen(string) + 1) * sizeof(char));
@@ -311,14 +356,15 @@ osl_symbols_p osl_symbols_sread(char ** input) {
   osl_symbols_p symbols;
   osl_symbols_p head;
   osl_interface_p registry;
+  osl_generic_p gen = NULL;
   
   if (*input == NULL) {
     OSL_debug("no symbols optional tag");
     return NULL;
   }
 
-  if (strlen(*input) > OSL_MAX_STRING) 
-    OSL_error("symbols too long");
+//  if (strlen(*input) > OSL_MAX_STRING) 
+//    OSL_error("symbols too long");
 
   // Find the number of names provided.
   nb_symbols = osl_util_read_int(NULL, input);
@@ -349,20 +395,48 @@ osl_symbols_p osl_symbols_sread(char ** input) {
     // Reading origin of symbol
     symbols->generated = osl_util_read_int(NULL, input);
 
-    // Reading the number of dimensions of a symbol
-    symbols->nb_dims = osl_util_read_int(NULL, input);
+    // Reading the tag
+    symbols->tag = osl_util_read_int(NULL, input);
 
     // Reading identifier
-    symbols->identifier = osl_generic_sread_one(input, registry);
+    gen =  osl_generic_sread_one(input, registry);
+    if (osl_generic_has_URI(gen, OSL_URI_NULL)){
+      symbols->identifier = NULL;
+      osl_generic_free(gen);
+    }
+    else {
+      symbols->identifier = gen;
+    }
 
     // Reading data type
-    symbols->datatype = osl_generic_sread_one(input, registry);
+    gen =  osl_generic_sread_one(input, registry);
+    if (osl_generic_has_URI(gen, OSL_URI_NULL)) {
+      symbols->datatype = NULL;
+      osl_generic_free(gen);
+    }
+    else {
+      symbols->datatype = gen;
+    }
 
     // Reading scope
-    symbols->scope = osl_generic_sread_one(input, registry);
+    gen =  osl_generic_sread_one(input, registry);
+    if (osl_generic_has_URI(gen, OSL_URI_NULL)) {
+      symbols->scope = NULL;
+      osl_generic_free(gen);
+    }
+    else {
+      symbols->scope = gen;
+    }
 
     // Reading extent
-    symbols->extent = osl_generic_sread_one(input, registry);
+    gen =  osl_generic_sread_one(input, registry);
+    if (osl_generic_has_URI(gen, OSL_URI_NULL)) {
+      symbols->extent = NULL;
+      osl_generic_free(gen);
+    }
+    else {
+      symbols->extent = gen;
+    }
 
     nb_symbols --;
     if (nb_symbols != 0) {
@@ -395,7 +469,7 @@ osl_symbols_p osl_symbols_malloc() {
   OSL_malloc(symbols, osl_symbols_p, sizeof(osl_symbols_t));
   symbols->type       = OSL_UNDEFINED;
   symbols->generated  = OSL_UNDEFINED;
-  symbols->nb_dims    = OSL_UNDEFINED;
+  symbols->tag        = OSL_UNDEFINED;
   symbols->identifier = NULL;
   symbols->datatype   = NULL;
   symbols->scope      = NULL;
@@ -463,7 +537,7 @@ osl_symbols_p osl_symbols_nclone(osl_symbols_p symbols, int n) {
     new             = osl_symbols_malloc();
     new->type       = symbols->type;
     new->generated  = symbols->generated;
-    new->nb_dims    = symbols->nb_dims;
+    new->tag        = symbols->tag;
     new->identifier = osl_generic_clone(symbols->identifier);
     new->datatype   = osl_generic_clone(symbols->datatype);
     new->scope      = osl_generic_clone(symbols->scope);
@@ -508,7 +582,7 @@ int osl_symbols_equal(osl_symbols_p c1, osl_symbols_p c2) {
     return 0;
 
   if (c1->type == c2->type && c1->generated == c2->generated && 
-      c1->nb_dims == c2->nb_dims) {
+      c1->tag == c2->tag) {
     if (osl_generic_equal(c1->identifier, c2->identifier)) {
       if (osl_generic_equal(c1->datatype, c2->datatype)) {
         if (osl_generic_equal(c1->scope, c2->scope)) {

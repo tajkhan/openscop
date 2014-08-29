@@ -2,9 +2,9 @@
     /*+-----------------------------------------------------------------**
      **                       OpenScop Library                          **
      **-----------------------------------------------------------------**
-     **                     extensions/symbols.h                        **
+     **                     extensions/symbol_rank.h                   **
      **-----------------------------------------------------------------**
-     **                   First version: 07/03/2012                     **
+     **                   First version: 14/03/2014                     **
      **-----------------------------------------------------------------**
 
  
@@ -57,82 +57,71 @@
  * structures. Written by:                                                   *
  * Cedric Bastoul     <Cedric.Bastoul@u-psud.fr> and                         *
  * Louis-Noel Pouchet <Louis-Noel.pouchet@inria.fr>                          *
- * Prasanth Chatharasi <prasanth@iith.ac.in>			             *
  *                                                                           *
  *****************************************************************************/
 
 
-#ifndef OSL_SYMBOLS_H
-# define OSL_SYMBOLS_H
+#ifndef OSL_SYMBOL_RANK_H
+# define OSL_SYMBOL_RANK_H
 
 # include <stdio.h>
 # include <osl/interface.h>
-# include <osl/relation.h>
-# include <osl/generic.h>
 
 # if defined(__cplusplus)
 extern "C"
   {
 # endif
 
-# define OSL_URI_SYMBOLS        "symbols"
+
+# define OSL_URI_SYMBOL_SCOPE "symbol_rank"
+
 
 /**
- * The osl_symbols_t structure stores information regarding the symbols.
+ * The osl_symbol_rank structure contains information about the a variable's
+ * rank.
+ * For an Iterator, the rank contains the iterator's depth
+ * For a Parameter, the rank contains the parameter's position
  */
-struct osl_symbols {
-  int           type;        /**< Symbol type (variable, iterator...) */
-  int           generated;   /**< Flag to determine its origin */
-  int           tag;         /**< Integer value to identify a symbol */
-  osl_generic_p identifier;  /**< Symbol identifier */
-  osl_generic_p datatype;    /**< Symbol Datatype (int, float...) */
-  osl_generic_p scope;       /**< Scope of symbol */
-  osl_generic_p extent;      /**< Limits of dimensions if Symbol is array */
-                             /**< Rank if Symbol is iterator or parameter */
-
-  void*         usr;         /**< A user defined field */
-  struct osl_symbols* next;
+struct osl_symbol_rank{
+  int   rank;       /**< Symbol rank (loop depth or parameter pos) */
 };
-typedef struct osl_symbols  osl_symbols_t;
-typedef struct osl_symbols* osl_symbols_p;
+typedef struct osl_symbol_rank  osl_symbol_rank_t;
+typedef struct osl_symbol_rank* osl_symbol_rank_p;
 
 
 /*+***************************************************************************
  *                          Structure display function                       *
  *****************************************************************************/
-void            osl_symbols_idump(FILE *, osl_symbols_p, int);
-void            osl_symbols_dump(FILE *, osl_symbols_p);
-char *          osl_symbols_sprint(osl_symbols_p);
+void              osl_symbol_rank_idump(FILE*, osl_symbol_rank_p, int);
+void              osl_symbol_rank_dump(FILE*, osl_symbol_rank_p);
+char*             osl_symbol_rank_sprint(osl_symbol_rank_p);
 
 
 /*****************************************************************************
  *                               Reading function                            *
  *****************************************************************************/
-osl_symbols_p   osl_symbols_sread(char **);
+osl_symbol_rank_p osl_symbol_rank_sread(char**);
 
 
 /*+***************************************************************************
  *                    Memory allocation/deallocation function                *
  *****************************************************************************/
-osl_symbols_p   osl_symbols_malloc();
-void            osl_symbols_free(osl_symbols_p);
+osl_symbol_rank_p osl_symbol_rank_malloc();
+void              osl_symbol_rank_free(osl_symbol_rank_p);
 
 
 /*+***************************************************************************
  *                            Processing functions                           *
  *****************************************************************************/
-void            osl_symbols_add(osl_symbols_p*, osl_symbols_p);
-osl_symbols_p   osl_symbols_nclone(osl_symbols_p, int);
-osl_symbols_p   osl_symbols_clone(osl_symbols_p);
-int             osl_symbols_equal(osl_symbols_p, osl_symbols_p);
-osl_symbols_p   osl_symbols_lookup(osl_symbols_p, osl_generic_p);
-osl_symbols_p   osl_symbols_remove(osl_symbols_p*, osl_symbols_p);
-int             osl_symbols_get_nb_symbols(osl_symbols_p);
-osl_interface_p osl_symbols_interface();
+osl_symbol_rank_p osl_symbol_rank_clone(osl_symbol_rank_p);
+int               osl_symbol_rank_equal(osl_symbol_rank_p, osl_symbol_rank_p);
+osl_interface_p   osl_symbol_rank_interface();
+int               osl_symbol_rank_get_rank(osl_symbol_rank_p);
+void              osl_symbol_rank_set_rank(osl_symbol_rank_p, int);
 
 
 # if defined(__cplusplus)
   }
 # endif
 
-#endif /* define OSL_SYMBOLS_H */
+#endif /* define OSL_SYMBOL_RANK_H */
